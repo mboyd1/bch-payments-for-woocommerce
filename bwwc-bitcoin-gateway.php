@@ -804,7 +804,7 @@ function BWWC__plugins_loaded__load_bitcoin_gateway ()
 	 * @access public
 	 * @param array $methods
 	 * @package
-	 * @return array/
+	 * @return array/
 
 	 */
 	function BWWC__add_bitcoin_gateway( $methods )

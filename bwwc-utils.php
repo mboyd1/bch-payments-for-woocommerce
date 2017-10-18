@@ -656,6 +656,7 @@ Realtime:
 
 
 	$this_currency_info = @$bwwc_settings['exchange_rates'][$currency_code][$requested_cache_method_type];
+
 	if ($this_currency_info && isset($this_currency_info['time-last-checked']))
 	{
 	  $delta = $current_time - $this_currency_info['time-last-checked'];
@@ -670,7 +671,7 @@ Realtime:
 	  	else
 	  		return $final_rate;
 	  }
-	}
+  }
 
 
 	$rates = array();
@@ -682,9 +683,9 @@ Realtime:
 	{
 
 		// First call succeeded
-
-		if ($exchange_rate_type == 'bestrate')
-			$rates[] = BWWC__get_exchange_rate_from_bitpay ($currency_code, $exchange_rate_type, $bwwc_settings);		   // Requested bestrate
+        //comment out bitpay for now until they add bitcoincash
+		//if ($exchange_rate_type == 'bestrate')
+		//	$rates[] = BWWC__get_exchange_rate_from_bitpay ($currency_code, $exchange_rate_type, $bwwc_settings);		   // Requested bestrate
 
 		$rates = array_filter ($rates);
 		if (count($rates) && $rates[0])
@@ -701,19 +702,19 @@ Realtime:
 
  		// First call failed
 		if ($exchange_rate_type == 'vwap')
- 			$rates[] = BWWC__get_exchange_rate_from_bitcoincharts ($currency_code, $exchange_rate_type, $bwwc_settings);
- 		else
-			$rates[] = BWWC__get_exchange_rate_from_bitpay ($currency_code, $exchange_rate_type, $bwwc_settings);		   // Requested bestrate
+ 			$rates[] = BWWC__get_exchange_rate_from_coinmarketcap ($currency_code, $exchange_rate_type, $bwwc_settings);
+ 		//else
+		//	$rates[] = BWWC__get_exchange_rate_from_bitpay ($currency_code, $exchange_rate_type, $bwwc_settings);		   // Requested bestrate
 
-		$rates = array_filter ($rates);
-		if (count($rates) && $rates[0])
-		{
-			$exchange_rate = min($rates);
-  		// Save new currency exchange rate info in cache
- 			BWWC__update_exchange_rate_cache ($currency_code, $requested_cache_method_type, $exchange_rate);
- 		}
- 		else
- 			$exchange_rate = false;
+        $rates = array_filter ($rates);
+        if (count($rates)) {
+            $exchange_rate = min($rates);
+        } else {
+            $exchange_rate = false;
+        }
+		if ($exchange_rate)	{// If array contained only meaningless data (all 'false's)
+	 		BWWC__update_exchange_rate_cache ($currency_code, $requested_cache_method_type, $exchange_rate);
+        }
  	}
 
 
@@ -760,7 +761,7 @@ function BWWC__update_exchange_rate_cache ($currency_code, $requested_cache_meth
 // $rate_type: 'vwap' | 'realtime' | 'bestrate'
 function BWWC__get_exchange_rate_from_bitcoinaverage ($currency_code, $rate_type, $bwwc_settings)
 {
-	$source_url	=	"https://apiv2.bitcoinaverage.com/indices/global/ticker/BCHUSD";
+	$source_url	=	"https://apiv2.bitcoinaverage.com/indices/global/ticker/short?crypto=BCH&fiat={$currency_code}";
 	$result = @BWWC__file_get_contents ($source_url, false, $bwwc_settings['exchange_rate_api_timeout_secs']);
 
 	$rate_obj = @json_decode(trim($result), true);
@@ -768,18 +769,17 @@ function BWWC__get_exchange_rate_from_bitcoinaverage ($currency_code, $rate_type
 	if (!is_array($rate_obj))
 		return false;
 
+    $json_root = 'BCH' . strtoupper($currency_code);
 
-	if (@$rate_obj['24h_avg'])
-		$rate_24h_avg = @$rate_obj['24h_avg'];
-	else if (@$rate_obj['last'] && @$rate_obj['ask'] && @$rate_obj['bid'])
-		$rate_24h_avg = ($rate_obj['last'] + $rate_obj['ask'] + $rate_obj['bid']) / 3;
-	else
-		$rate_24h_avg = @$rate_obj['last'];
+	if (@$rate_obj[$json_root] && @$rate_obj[$json_root]['averages'] && @$rate_obj['averages']['day'])
+		$rate_24h_avg = @$rate_obj[$json_root]['averages']['day'];
+	else if (@$rate_obj[$json_root])
+		$rate_24h_avg = @$rate_obj[$json_root]['last'];
 
 	switch ($rate_type)
 	{
 		case 'vwap'	:				return $rate_24h_avg;
-		case 'realtime'	:		return @$rate_obj['last'];
+		case 'realtime'	:		return @$rate_obj[$json_root]['last'];
 		case 'bestrate'	:
 		default:						return min ($rate_24h_avg, @$rate_obj['last']);
 	}
@@ -788,16 +788,20 @@ function BWWC__get_exchange_rate_from_bitcoinaverage ($currency_code, $rate_type
 
 //===========================================================================
 // $rate_type: 'vwap' | 'realtime' | 'bestrate'
-function BWWC__get_exchange_rate_from_bitcoincharts ($currency_code, $rate_type, $bwwc_settings)
+function BWWC__get_exchange_rate_from_coinmarketcap ($currency_code, $rate_type, $bwwc_settings)
 {
-	$source_url	=	"http://XXXapi.bitcoincharts.com/v1/weighted_prices.json";
+	$source_url	=	"https://api.coinmarketcap.com/v1/ticker/bitcoin-cash/?convert={$currency_code}";
 	$result = @BWWC__file_get_contents ($source_url, false, $bwwc_settings['exchange_rate_api_timeout_secs']);
 
 	$rate_obj = @json_decode(trim($result), true);
 
+	if (!is_array($rate_obj))
+		return false;
 
-	// Only vwap rate is available
-	return @$rate_obj[$currency_code]['24h'];
+    $currency_code_tolower = strtolower($currency_code);
+
+    // Only vwap rate is available
+	return @$rate_obj['0']['price_' . $currency_code_tolower];
 }
 //===========================================================================
 
@@ -805,7 +809,7 @@ function BWWC__get_exchange_rate_from_bitcoincharts ($currency_code, $rate_type,
 // $rate_type: 'vwap' | 'realtime' | 'bestrate'
 function BWWC__get_exchange_rate_from_bitpay ($currency_code, $rate_type, $bwwc_settings)
 {
-	$source_url	=	"https://XXXbitpay.com/api/rates";
+	$source_url	=	"https://bitpay.com/api/rates";
 	$result = @BWWC__file_get_contents ($source_url, false, $bwwc_settings['exchange_rate_api_timeout_secs']);
 
 	$rate_objs = @json_decode(trim($result), true);
@@ -1120,7 +1124,7 @@ function BWWC__is_gateway_valid_for_use (&$ret_reason_message=NULL)
   //----------------------------------
   // Validate connection to exchange rate services
 
-  $store_currency_code = 'USD';
+  $store_currency_code = get_woocommerce_currency();
   if ($store_currency_code != 'BTC')
   {
     $currency_rate = BWWC__get_exchange_rate_per_bitcoin ($store_currency_code, 'getfirst', false);
