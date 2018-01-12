@@ -1,7 +1,7 @@
 <?php
 /*
 Bitcoin Cash Payments for WooCommerce
-https://github.com/mboyd1/bitcoin-cash-payments-for-woocommerce
+https://github.com/sanchaz/bitcoin-cash-payments-for-woocommerce
 */
 
 // Include everything
@@ -273,7 +273,7 @@ function BWWC__render_general_settings_page_html()
                 <?php echo '<tt style="background-color:#FFA;color:#B00;padding:0px 6px;">wget -O /dev/null ' . $g_BWWC__cron_script_url . '?hardcron=1</tt>'; ?>
                 <br /><b style="color:red;">NOTE:</b> Cron jobs <b>might not work</b> if your site is password protected with HTTP Basic auth or other methods. This will result in WooCommerce store not seeing received payments (even though funds will arrive correctly to your bitcoin cash addresses).
                 <br /><u>Note:</u> You will need to deactivate/reactivate plugin after changing this setting for it to have effect.<br />
-                "Hard" cron jobs may not be properly supported by all hosting plans (many shared hosting plans has restrictions in place).               
+                "Hard" cron jobs may not be properly supported by all hosting plans (many shared hosting plans has restrictions in place).
               </p>
             </td>
         </tr>

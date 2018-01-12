@@ -67,6 +67,11 @@ This is still in Beta, some bugs may be encountered please open an issue.
 
 == Changelog ==
 
+= 4.13 =
+* Added simple casdddr support. This means displays cashaddr on pay page, also adds it to the post metadata for easier search. (Does not store it internally or use it on api calls, this will be added later)
+* Fixed styling issues using php cs fixer v2 using PSR2 rules
+* Remove donation address and plea
+
 = 4.12 =
 * Fixed multiple currency.
 * Added new price provider.

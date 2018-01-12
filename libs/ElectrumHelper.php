@@ -1,5 +1,6 @@
 <?php
 use CashAddr\CashAddress;
+
 // To fix problem with earlier PHP versions not supporting hex2bin
 if (!function_exists('hex2bin')) {
     function hex2bin($str)

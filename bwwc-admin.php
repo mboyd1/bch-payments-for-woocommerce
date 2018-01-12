@@ -1,7 +1,7 @@
 <?php
 /*
 Bitcoin Cash Payments for WooCommerce
-https://github.com/mboyd1/bitcoin-cash-payments-for-woocommerce
+https://github.com/sanchaz/bitcoin-cash-payments-for-woocommerce
 */
 
 // Include everything
@@ -76,11 +76,6 @@ function BWWC__GetPluginNameVersionEdition($please_donate = true)
             BWWC_VERSION. '</span> [<span style="color:#EE0000;background-color:#FFFF77;">&nbsp;' .
             BWWC_EDITION . '&nbsp;</span> edition]' .
           '</h2>';
-
-
-    if ($please_donate) {
-        $return_data .= '<p style="border:1px solid #890e4e;padding:5px 10px;color:#004400;background-color:#FFF;"><u>Please donate Bitcoin Cash to</u>:&nbsp;&nbsp;<span style="color:#d21577;font-size:110%;font-weight:bold;">18vzABPyVbbia8TDCKDtXJYXcoAFAPk2cj</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>';
-    }
 
     return $return_data;
 }
@@ -245,7 +240,7 @@ function BWWC__update_individual_bwwc_setting(&$bwwc_current_setting, $bwwc_new_
     if (is_string($bwwc_new_setting)) {
         $bwwc_current_setting = BWWC__stripslashes($bwwc_new_setting);
     } elseif (is_array($bwwc_new_setting)) {  // Note: new setting may not exist yet in current setting: curr[t5] - not set yet, while new[t5] set.
-      // Need to do recursive
+        // Need to do recursive
         foreach ($bwwc_new_setting as $k=>$v) {
             if (!isset($bwwc_current_setting[$k])) {
                 $bwwc_current_setting[$k] = "";

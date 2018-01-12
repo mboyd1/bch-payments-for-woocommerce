@@ -65,7 +65,7 @@ class CashAddress
              * @var string $prefix
              * @var int[] $words
              */
-            list ($prefix, $words) = Base32::decode($string);
+            list($prefix, $words) = Base32::decode($string);
         } catch (InvalidChecksumException $e) {
             throw new CashAddressException("Checksum failed to verify", 0, $e);
         } catch (Base32Exception $e) {
@@ -76,7 +76,7 @@ class CashAddress
         $bytes = Base32::fromWords($numWords, $words);
         $numBytes = count($bytes);
 
-        list ($scriptType, $hash) = self::extractPayload($numBytes, $bytes);
+        list($scriptType, $hash) = self::extractPayload($numBytes, $bytes);
 
         return [$prefix, $scriptType, $hash];
     }
@@ -99,7 +99,7 @@ class CashAddress
             if ($publicKey[0] !== "\x02" && $publicKey[0] !== "\x03") {
                 throw new CashAddressException("Invalid public key");
             }
-        } else if ($length === 65) {
+        } elseif ($length === 65) {
             if ($publicKey[0] !== "\x04") {
                 throw new CashAddressException("Invalid public key");
             }
@@ -214,7 +214,7 @@ class CashAddress
             throw new CashAddressException("Empty base32 string");
         }
 
-        list ($scriptType, $hashLengthBits) = self::decodeVersion($payloadBytes[0]);
+        list($scriptType, $hashLengthBits) = self::decodeVersion($payloadBytes[0]);
 
         if (($hashLengthBits / 8) !== $numBytes - 1) {
             throw new CashAddressException("Hash length does not match version");

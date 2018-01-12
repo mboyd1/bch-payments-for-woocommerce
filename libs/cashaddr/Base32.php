@@ -215,9 +215,9 @@ class Base32
 
         if ($idxSeparator === -1) {
             throw new Base32Exception("Missing separator character");
-        } else if ($idxSeparator === 0) {
+        } elseif ($idxSeparator === 0) {
             throw new Base32Exception("Missing prefix");
-        } else if (($idxSeparator + 7) > $stringLen) {
+        } elseif (($idxSeparator + 7) > $stringLen) {
             throw new Base32Exception("Invalid location for separator character");
         }
 
@@ -311,7 +311,7 @@ class Base32
             if ($bits) {
                 $ret[] = ($acc << $toBits - $bits) & $maxv;
             }
-        } else if ($bits >= $fromBits || ((($acc << ($toBits - $bits))) & $maxv)) {
+        } elseif ($bits >= $fromBits || ((($acc << ($toBits - $bits))) & $maxv)) {
             throw new Base32Exception('Invalid data');
         }
 
