@@ -1,114 +1,109 @@
 <?php
 /*
 Bitcoin Cash Payments for WooCommerce
-https://github.com/mboyd1/bitcoin-cash-payments-for-woocommerce
+https://github.com/sanchaz/bitcoin-cash-payments-for-woocommerce
 */
 
 // Include everything
-include (dirname(__FILE__) . '/bwwc-include-all.php');
+include(dirname(__FILE__) . '/bwwc-include-all.php');
 
 //===========================================================================
-function BWWC__render_general_settings_page ()   { BWWC__render_settings_page   ('general'); }
-function BWWC__render_advanced_settings_page ()  { BWWC__render_settings_page   ('advanced'); }
-//===========================================================================
-
-//===========================================================================
-function BWWC__render_settings_page ($menu_page_name)
+function BWWC__render_general_settings_page()
 {
-   $bwwc_settings = BWWC__get_settings ();
+    BWWC__render_settings_page('general');
+}
+function BWWC__render_advanced_settings_page()
+{
+    BWWC__render_settings_page('advanced');
+}
+//===========================================================================
 
-   if (isset ($_POST['button_update_bwwc_settings']))
-      {
-      BWWC__update_settings ("", false);
-echo <<<HHHH
+//===========================================================================
+function BWWC__render_settings_page($menu_page_name)
+{
+    $bwwc_settings = BWWC__get_settings();
+
+    if (isset($_POST['button_update_bwwc_settings'])) {
+        BWWC__update_settings("", false);
+        echo <<<HHHH
 <div align="center" style="background-color:#FFFFE0;padding:5px;font-size:120%;border: 1px solid #E6DB55;margin:5px;border-radius:3px;">
 Settings updated!
 </div>
 HHHH;
-      }
-   else if (isset($_POST['button_reset_bwwc_settings']))
-      {
-      BWWC__reset_all_settings (false);
-echo <<<HHHH
+    } elseif (isset($_POST['button_reset_bwwc_settings'])) {
+        BWWC__reset_all_settings(false);
+        echo <<<HHHH
 <div align="center" style="background-color:#FFFFE0;padding:5px;font-size:120%;border: 1px solid #E6DB55;margin:5px;border-radius:3px;">
 All settings reverted to all defaults
 </div>
 HHHH;
-      }
-   else if (isset($_POST['button_reset_partial_bwwc_settings']))
-      {
-      BWWC__reset_partial_settings (false);
-echo <<<HHHH
+    } elseif (isset($_POST['button_reset_partial_bwwc_settings'])) {
+        BWWC__reset_partial_settings(false);
+        echo <<<HHHH
 <div align="center" style="background-color:#FFFFE0;padding:5px;font-size:120%;border: 1px solid #E6DB55;margin:5px;border-radius:3px;">
 Settings on this page reverted to defaults
 </div>
 HHHH;
-      }
-   else if (isset($_POST['validate_bwwc-license']))
-      {
-      BWWC__update_settings ("", false);
-      }
+    } elseif (isset($_POST['validate_bwwc-license'])) {
+        BWWC__update_settings("", false);
+    }
 
-   // Output full admin settings HTML
-  $gateway_status_message = "";
-  $gateway_valid_for_use = BWWC__is_gateway_valid_for_use($gateway_status_message);
-  if (!$gateway_valid_for_use)
-  {
-    $gateway_status_message =
+    // Output full admin settings HTML
+    $gateway_status_message = "";
+    $gateway_valid_for_use = BWWC__is_gateway_valid_for_use($gateway_status_message);
+    if (!$gateway_valid_for_use) {
+        $gateway_status_message =
     '<p style="border:1px solid #DDD;padding:5px 10px;font-weight:bold;color:#EE0000;background-color:#FFFFAA;">' .
     "Bitcoin Cash Payment Gateway is NOT operational (try to re-enter and save settings): " . $gateway_status_message .
     '</p>';
-  }
-  else
-  {
-    $gateway_status_message =
+    } else {
+        $gateway_status_message =
     '<p style="border:1px solid #DDD;padding:5px 10px;font-weight:bold;color:#004400;background-color:#CCFFCC;">' .
     "Bitcoin Cash Payment Gateway is operational" .
     '</p>';
-  }
+    }
 
-  $currency_code = false;
-  if (function_exists('get_woocommerce_currency'))
-    $currency_code = @get_woocommerce_currency();
-  if (!$currency_code || $currency_code=='BTC')
-    $currency_code = 'USD';
+    $currency_code = false;
+    if (function_exists('get_woocommerce_currency')) {
+        $currency_code = @get_woocommerce_currency();
+    }
+    if (!$currency_code || $currency_code=='BTC') {
+        $currency_code = 'USD';
+    }
 
-  $exchange_rate_message =
+    $exchange_rate_message =
     '<p style="border:1px solid #DDD;padding:5px 10px;background-color:#cceeff;">' .
-    BWWC__get_exchange_rate_per_bitcoin ($currency_code, 'getfirst', true) .
+    BWWC__get_exchange_rate_per_bitcoin($currency_code, 'getfirst', true) .
     '</p>';
 
-   echo '<div class="wrap">';
+    echo '<div class="wrap">';
 
-   switch ($menu_page_name)
-      {
-      case 'general'     :
+    switch ($menu_page_name) {
+      case 'general':
         echo  BWWC__GetPluginNameVersionEdition(true);
         echo  $gateway_status_message . $exchange_rate_message;
         BWWC__render_general_settings_page_html();
         break;
 
-      case 'advanced'    :
+      case 'advanced':
         echo  BWWC__GetPluginNameVersionEdition(false);
         echo  $gateway_status_message . $exchange_rate_message;
         BWWC__render_advanced_settings_page_html();
         break;
 
-      default            :
+      default:
         break;
       }
 
-   echo '</div>'; // wrap
+    echo '</div>'; // wrap
 }
 //===========================================================================
 
 //===========================================================================
-function BWWC__render_general_settings_page_html ()
+function BWWC__render_general_settings_page_html()
 {
-  $bwwc_settings = BWWC__get_settings ();
-  global $g_BWWC__cron_script_url;
-
-?>
+    $bwwc_settings = BWWC__get_settings();
+    global $g_BWWC__cron_script_url; ?>
 
     <form method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
       <p class="submit">
@@ -121,7 +116,9 @@ function BWWC__render_general_settings_page_html ()
         <tr valign="top">
           <th scope="row">Delete all plugin-specific settings, database tables and data on uninstall:</th>
           <td>
-            <input type="hidden" name="delete_db_tables_on_uninstall" value="0" /><input type="checkbox" name="delete_db_tables_on_uninstall" value="1" <?php if ($bwwc_settings['delete_db_tables_on_uninstall']) echo 'checked="checked"'; ?> />
+            <input type="hidden" name="delete_db_tables_on_uninstall" value="0" /><input type="checkbox" name="delete_db_tables_on_uninstall" value="1" <?php if ($bwwc_settings['delete_db_tables_on_uninstall']) {
+        echo 'checked="checked"';
+    } ?> />
             <p class="description">If checked - all plugin-specific settings, database tables and data will be removed from Wordpress database upon plugin uninstall (but not upon deactivation or upgrade).</p>
           </td>
         </tr>
@@ -130,8 +127,12 @@ function BWWC__render_general_settings_page_html ()
           <th scope="row">Bitcoin Cash Service Provider:</th>
           <td>
             <select name="service_provider" class="select ">
-              <option <?php if ($bwwc_settings['service_provider'] == 'electrum_wallet') echo 'selected="selected"'; ?> value="electrum_wallet">Your own Electron Cash wallet</option>
-              <option <?php if ($bwwc_settings['service_provider'] == 'blockchain_info') echo 'selected="selected"'; ?> value="blockchain_info">Blockchain.info API (DOES NOT WORK FOR BITCOIN CASH! use Electron Cash instead)</option>
+              <option <?php if ($bwwc_settings['service_provider'] == 'electrum_wallet') {
+        echo 'selected="selected"';
+    } ?> value="electrum_wallet">Your own Electron Cash wallet</option>
+              <option <?php if ($bwwc_settings['service_provider'] == 'blockchain_info') {
+        echo 'selected="selected"';
+    } ?> value="blockchain_info">Blockchain.info API (DOES NOT WORK FOR BITCOIN CASH! use Electron Cash instead)</option>
             </select>
             <p class="description">
               Please select your Bitcoin Cash service provider and press [Save changes]. Then fill-in necessary details and press [Save changes] again.
@@ -184,9 +185,15 @@ function BWWC__render_general_settings_page_html ()
           <th scope="row">Bitcoin Cash Exchange rate calculation type:</th>
           <td>
             <select name="exchange_rate_type" class="select ">
-              <option <?php if ($bwwc_settings['exchange_rate_type'] == 'vwap') echo 'selected="selected"'; ?> value="vwap">Weighted Average</option>
-              <option <?php if ($bwwc_settings['exchange_rate_type'] == 'realtime') echo 'selected="selected"'; ?> value="realtime">Real Time</option>
-              <option <?php if ($bwwc_settings['exchange_rate_type'] == 'bestrate') echo 'selected="selected"'; ?> value="bestrate">Most profitable</option>
+              <option <?php if ($bwwc_settings['exchange_rate_type'] == 'vwap') {
+        echo 'selected="selected"';
+    } ?> value="vwap">Weighted Average</option>
+              <option <?php if ($bwwc_settings['exchange_rate_type'] == 'realtime') {
+        echo 'selected="selected"';
+    } ?> value="realtime">Real Time</option>
+              <option <?php if ($bwwc_settings['exchange_rate_type'] == 'bestrate') {
+        echo 'selected="selected"';
+    } ?> value="bestrate">Most profitable</option>
             </select>
             <p class="description">
               Weighted Average (recommended): <a href="http://en.wikipedia.org/wiki/Volume-weighted_average_price">weighted average</a> rates polled from a number of exchange services
@@ -233,7 +240,9 @@ function BWWC__render_general_settings_page_html ()
         <tr valign="top">
           <th scope="row">Auto-complete paid orders:</th>
           <td>
-            <input type="hidden" name="autocomplete_paid_orders" value="0" /><input type="checkbox" name="autocomplete_paid_orders" value="1" <?php if ($bwwc_settings['autocomplete_paid_orders']) echo 'checked="checked"'; ?> />
+            <input type="hidden" name="autocomplete_paid_orders" value="0" /><input type="checkbox" name="autocomplete_paid_orders" value="1" <?php if ($bwwc_settings['autocomplete_paid_orders']) {
+        echo 'checked="checked"';
+    } ?> />
             <p class="description">If checked - fully paid order will be marked as 'completed' and '<i>Your order is complete</i>' email will be immediately delivered to customer.
             	<br />If unchecked: store admin will need to mark order as completed manually - assuming extra time needed to ship physical product after payment is received.
             	<br />Note: virtual/downloadable products will automatically complete upon receiving full payment (so this setting does not have effect in this case).
@@ -245,11 +254,17 @@ function BWWC__render_general_settings_page_html ()
             <th scope="row">Cron job type:</th>
             <td>
               <select name="enable_soft_cron_job" class="select ">
-                <option <?php if ($bwwc_settings['enable_soft_cron_job'] == '1') echo 'selected="selected"'; ?> value="1">Soft Cron (Wordpress-driven)</option>
-                <option <?php if ($bwwc_settings['enable_soft_cron_job'] != '1') echo 'selected="selected"'; ?> value="0">Hard Cron (Cpanel-driven)</option>
+                <option <?php if ($bwwc_settings['enable_soft_cron_job'] == '1') {
+        echo 'selected="selected"';
+    } ?> value="1">Soft Cron (Wordpress-driven)</option>
+                <option <?php if ($bwwc_settings['enable_soft_cron_job'] != '1') {
+        echo 'selected="selected"';
+    } ?> value="0">Hard Cron (Cpanel-driven)</option>
               </select>
               <p class="description">
-                <?php if ($bwwc_settings['enable_soft_cron_job'] != '1') echo '<p style="background-color:#FFC;color:#2A2;"><b>NOTE</b>: Hard Cron job is enabled: make sure to follow instructions below to enable hard cron job at your hosting panel.</p>'; ?>
+                <?php if ($bwwc_settings['enable_soft_cron_job'] != '1') {
+        echo '<p style="background-color:#FFC;color:#2A2;"><b>NOTE</b>: Hard Cron job is enabled: make sure to follow instructions below to enable hard cron job at your hosting panel.</p>';
+    } ?>
                 Cron job will take care of all regular bitcoin cash payment processing tasks, like checking if payments are made and automatically completing the orders.<br />
                 <b>Soft Cron</b>: - Wordpress-driven (runs on behalf of a random site visitor).
                 <br />
@@ -258,7 +273,7 @@ function BWWC__render_general_settings_page_html ()
                 <?php echo '<tt style="background-color:#FFA;color:#B00;padding:0px 6px;">wget -O /dev/null ' . $g_BWWC__cron_script_url . '?hardcron=1</tt>'; ?>
                 <br /><b style="color:red;">NOTE:</b> Cron jobs <b>might not work</b> if your site is password protected with HTTP Basic auth or other methods. This will result in WooCommerce store not seeing received payments (even though funds will arrive correctly to your bitcoin cash addresses).
                 <br /><u>Note:</u> You will need to deactivate/reactivate plugin after changing this setting for it to have effect.<br />
-                "Hard" cron jobs may not be properly supported by all hosting plans (many shared hosting plans has restrictions in place).               
+                "Hard" cron jobs may not be properly supported by all hosting plans (many shared hosting plans has restrictions in place).
               </p>
             </td>
         </tr>
@@ -275,12 +290,9 @@ function BWWC__render_general_settings_page_html ()
 //===========================================================================
 
 //===========================================================================
-function BWWC__render_advanced_settings_page_html ()
+function BWWC__render_advanced_settings_page_html()
 {
-   $bwwc_settings = BWWC__get_settings ();
-
-
-?>
+    $bwwc_settings = BWWC__get_settings(); ?>
 
 
 <p style="text-align:center;"><?php echo BWWC__GetProLabel(); ?></p>

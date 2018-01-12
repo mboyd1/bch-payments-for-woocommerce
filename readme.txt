@@ -1,4 +1,4 @@
-=== Bitcoin Cash Payments for WooCommerce ===
+=== (BETA) Bitcoin Cash Payments for WooCommerce ===
 Contributors: mboyd1, gesman, bitcoinway.com
 Donation address (bitcoin cash only): 18vzABPyVbbia8TDCKDtXJYXcoAFAPk2cj
 Tags: bitcoin cash, bitcoin cash wordpress plugin, bitcoin cash plugin, bitcoin cash payments, accept bitcoin cash, bch, bcc
@@ -16,6 +16,8 @@ Bitcoin Cash Payments for WooCommerce is a Wordpress plugin that allows you to a
 Your online store must use WooCommerce platform (free wordpress plugin).
 Once you installed and activated WooCommerce, you may install and activate Bitcoin Cash Payments for WooCommerce.
 
+This is still in Beta, some bugs may be encountered please open an issue.
+
 = Benefits =
 
 * Accept payment directly into your personal Electron Cash wallet.
@@ -24,7 +26,7 @@ Once you installed and activated WooCommerce, you may install and activate Bitco
 * Add bitcoin cash  payments option to your existing online store with alternative main currency.
 * Flexible exchange rate calculations fully managed via administrative settings.
 * Zero fees and no commissions for bitcoin cash payments processing from any third party.
-* Set main currency of your store to USD or bitcoin cash.
+* Supports multiple currencies, including Bitcoin Cash.
 * Automatic conversion to bitcoin cash via realtime exchange rate feed and calculations.
 * Ability to set exchange rate calculation multiplier to compensate for any possible losses due to bank conversions and funds transfer fees.
 
@@ -51,6 +53,7 @@ Once you installed and activated WooCommerce, you may install and activate Bitco
 
 == Supporters ==
 
+* sanchaz: http://sanchaz.net
 * mboyd1:  https://github.com/mboyd1
 * Yifu Guo: http://bitsyn.com/
 * Bitcoin Grants: http://bitcoingrant.org/
@@ -63,6 +66,15 @@ Once you installed and activated WooCommerce, you may install and activate Bitco
 
 
 == Changelog ==
+
+= 4.13 =
+* Added simple casdddr support. This means displays cashaddr on pay page, also adds it to the post metadata for easier search. (Does not store it internally or use it on api calls, this will be added later)
+* Fixed styling issues using php cs fixer v2 using PSR2 rules
+* Remove donation address and plea
+
+= 4.12 =
+* Fixed multiple currency.
+* Added new price provider.
 
 = 3.03 =
 * Forked original bitcoin payment plugin, modified for Bitcoin Cash.  Supports Electron Cash wallet's Master Public Key
