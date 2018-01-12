@@ -36,7 +36,8 @@ function BWWC__MATH_generate_bitcoin_address_from_mpk($master_public_key, $key_i
     }
 
     if (preg_match('/^[a-f0-9]{128}$/', $master_public_key)) {
-        return BWWC__MATH_generate_bitcoin_address_from_mpk_v1($master_public_key, $key_index);
+        //return BWWC__MATH_generate_bitcoin_address_from_mpk_v1($master_public_key, $key_index);
+        return false;// TODO remove mpkv1
     }
 
     if (preg_match('/^xpub[a-zA-Z0-9]{107}$/', $master_public_key)) {

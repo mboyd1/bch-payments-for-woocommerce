@@ -1,5 +1,5 @@
 <?php
-
+use CashAddr\CashAddress;
 // To fix problem with earlier PHP versions not supporting hex2bin
 if (!function_exists('hex2bin')) {
     function hex2bin($str)
@@ -24,14 +24,16 @@ class ElectrumHelper
     public static function mpk_to_bc_address($mpk, $index, $version, $is_for_change = false)
     {
         if ($version == self::V1) {
-            $pubkey = self::mpkV1_to_pubkey($mpk, $index);
+            $pubkey = self::mpkV1_to_pubkey($mpk, $index); //TODO remove mpkv1
         } elseif ($version == self::V2) {
             $pubkey = self::mpkV2_to_pubkey($mpk, $index, $is_for_change);
         } else {
             throw new ErrorException("Unknown Electrum version");
         }
-
-        return self::pubkey_to_bc_address($pubkey);
+        $pubkeys = array();
+        $pubkeys["btc_address"] = self::pubkey_to_bc_address($pubkey);
+        $pubkeys["bch_cashaddr"] = self::pubkey_to_bch_cashaddr($pubkey);
+        return $pubkeys;
     }
 
     public static function mpkV1_to_pubkey($mpk, $index)
@@ -373,6 +375,16 @@ class ElectrumHelper
         $addr = $vh160 . substr($h, 0, 4);
 
         return self::base58_encode($addr);
+    }
+
+    // creates a bitcoincash cashaddr address
+    // see https://github.com/Bitcoin-UAHF/spec/blob/master/cashaddr.md
+    // for specifiction
+    public static function pubkey_to_bch_cashaddr($pubkey)
+    {
+        $prefix = "bitcoincash";
+        $pubkeyBin = pack("H*", $pubkey);
+        return CashAddress::pubKeyHashFromKey($prefix, $pubkeyBin);
     }
 
     public static function secp256k1_params()

@@ -1,7 +1,7 @@
 <?php
 /*
 Bitcoin Cash Payments for WooCommerce
-https://github.com/mboyd1/bitcoin-cash-payments-for-woocommerce
+https://github.com/sanchaz/bitcoin-cash-payments-for-woocommerce
 */
 
 
@@ -133,11 +133,12 @@ function BWWC__get_bitcoin_address_for_payment__electrum($electrum_mpk, $order_i
                 if ($blockchains_api_failures >= $bwwc_settings['max_blockchains_api_failures']) {
                     // Allow no more than 3 contigious blockchains API failures. After which return error reply.
                     $ret_info_array = array(
-               'result'                      => 'error',
-               'message'                     => $ret_info_array['message'],
-               'host_reply_raw'              => $ret_info_array['host_reply_raw'],
-               'generated_bitcoin_address'   => false,
-               );
+                       'result'                      => 'error',
+                       'message'                     => $ret_info_array['message'],
+                       'host_reply_raw'              => $ret_info_array['host_reply_raw'],
+                       'generated_bitcoin_address'   => false,
+                       'generated_bch_cashaddr'      => false,
+                       );
                     return $ret_info_array;
                 }
             } else {
@@ -172,7 +173,7 @@ function BWWC__get_bitcoin_address_for_payment__electrum($electrum_mpk, $order_i
         }
         //-------------------------------------------------------
     }
-
+    $bch_cashaddr = false;
     //-------------------------------------------------------
     if (!$clean_address) {
         // Still could not find unused virgin address. Time to generate it from scratch.
@@ -188,6 +189,8 @@ function BWWC__get_bitcoin_address_for_payment__electrum($electrum_mpk, $order_i
         $ret_addr_array = BWWC__generate_new_bitcoin_address_for_electrum_wallet($bwwc_settings, $electrum_mpk);
         if ($ret_addr_array['result'] == 'success') {
             $clean_address = $ret_addr_array['generated_bitcoin_address'];
+            $bch_cashaddr = $ret_addr_array['generated_bch_cashaddr'];
+            print "$bch_cashaddr";
         }
     }
     //-------------------------------------------------------
@@ -260,6 +263,7 @@ function BWWC__get_bitcoin_address_for_payment__electrum($electrum_mpk, $order_i
          'message'                     => "",
          'host_reply_raw'              => "",
          'generated_bitcoin_address'   => $clean_address,
+         'generated_bch_cashaddr'      => $bch_cashaddr,
          );
 
         return $ret_info_array;
@@ -271,6 +275,7 @@ function BWWC__get_bitcoin_address_for_payment__electrum($electrum_mpk, $order_i
       'message'                     => 'Failed to find/generate bitcoin cash address. ' . $ret_addr_array['message'],
       'host_reply_raw'              => $ret_addr_array['host_reply_raw'],
       'generated_bitcoin_address'   => false,
+      'generated_bch_cashaddr'      => false,
       );
     return $ret_info_array;
 }
@@ -327,6 +332,7 @@ function BWWC__generate_new_bitcoin_address_for_electrum_wallet($bwwc_settings=f
         'message'                     => 'No MPK passed and either no MPK present in copy-settings or service provider is not Electron Cash',
         'host_reply_raw'              => '',
         'generated_bitcoin_address'   => false,
+        'generated_bch_cashaddr'      => false,
         );
             return $ret_info_array;
         }
@@ -338,6 +344,7 @@ function BWWC__generate_new_bitcoin_address_for_electrum_wallet($bwwc_settings=f
     $assigned_address_expires_in_secs     = $bwwc_settings['assigned_address_expires_in_mins'] * 60;
 
     $clean_address = false;
+    $new_bch_cashaddr = false;
 
     // Find next index to generate
     $next_key_index = $wpdb->get_var("SELECT MAX(`index_in_wallet`) AS `max_index_in_wallet` FROM `$btc_addresses_table_name` WHERE `origin_id`='$origin_id';");
@@ -351,7 +358,9 @@ function BWWC__generate_new_bitcoin_address_for_electrum_wallet($bwwc_settings=f
     $total_new_keys_generated = 0;
     $blockchains_api_failures = 0;
     do {
-        $new_btc_address = BWWC__MATH_generate_bitcoin_address_from_mpk($electrum_mpk, $next_key_index);
+        $addresses = BWWC__MATH_generate_bitcoin_address_from_mpk($electrum_mpk, $next_key_index);
+        $new_btc_address = $addresses["btc_address"];
+        $new_bch_cashaddr = $addresses["bch_cashaddr"];
 
         $address_request_array = array();
         $address_request_array['btc_address'] = $new_btc_address;
@@ -390,6 +399,7 @@ function BWWC__generate_new_bitcoin_address_for_electrum_wallet($bwwc_settings=f
           'message'                     => $ret_info_array['message'],
           'host_reply_raw'              => $ret_info_array['host_reply_raw'],
           'generated_bitcoin_address'   => false,
+          'generated_bch_cashaddr'      => false,
           );
                 return $ret_info_array;
             }
@@ -413,17 +423,19 @@ function BWWC__generate_new_bitcoin_address_for_electrum_wallet($bwwc_settings=f
         'message'                     => "Problem: Generated '$total_new_keys_generated' addresses and none were found to be unused. Possibly old merchant's wallet (with many used addresses) is used for new installation. If that is the case - 'starting_index_for_new_btc_addresses' needs to be proper set to high value",
         'host_reply_raw'              => '',
         'generated_bitcoin_address'   => false,
+        'generated_bch_cashaddr'      => false,
         );
             return $ret_info_array;
         }
     } while (true);
-
+    print "$new_bch_cashaddr";
     // Here only in case of clean address.
     $ret_info_array = array(
     'result'                      => 'success',
     'message'                     => '',
     'host_reply_raw'              => '',
     'generated_bitcoin_address'   => $clean_address,
+    'generated_bch_cashaddr'      => $new_bch_cashaddr,
     );
 
     return $ret_info_array;
@@ -619,11 +631,11 @@ function BWWC__get_exchange_rate_per_bitcoin($currency_code, $rate_retrieval_met
     24H global weighted average:
         https://api.bitcoinaverage.com/ticker/global/USD/
         http://api.bitcoincharts.com/v1/weighted_prices.json
-    
+
     Realtime:
         https://api.bitcoinaverage.com/ticker/global/USD/
         https://bitpay.com/api/rates
-    
+
     */
 
     $bwwc_settings = BWWC__get_settings();

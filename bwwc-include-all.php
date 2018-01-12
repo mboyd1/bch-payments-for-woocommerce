@@ -1,13 +1,14 @@
 <?php
 /*
 Bitcoin Cash Payments for WooCommerce
-https://github.com/mboyd1/bitcoin-cash-payments-for-woocommerce
+https://github.com/sanchaz/bitcoin-cash-payments-for-woocommerce
 */
 
 //---------------------------------------------------------------------------
 // Global definitions
+
 if (!defined('BWWC_PLUGIN_NAME')) {
-    define('BWWC_VERSION', '3.03');
+    define('BWWC_VERSION', '4.13');
 
     //-----------------------------------------------
     define('BWWC_EDITION', 'Standard');
@@ -59,3 +60,10 @@ require_once(dirname(__FILE__) . '/bwwc-utils.php');
 require_once(dirname(__FILE__) . '/bwwc-admin.php');
 require_once(dirname(__FILE__) . '/bwwc-render-settings.php');
 require_once(dirname(__FILE__) . '/bwwc-bitcoin-gateway.php');
+
+//Load cashaddr libs
+require_once(dirname(__FILE__) . '/libs/cashaddr/Base32.php');
+require_once(dirname(__FILE__) . '/libs/cashaddr/CashAddress.php');
+require_once(dirname(__FILE__) . '/libs/cashaddr/Exception/Base32Exception.php');
+require_once(dirname(__FILE__) . '/libs/cashaddr/Exception/CashAddressException.php');
+require_once(dirname(__FILE__) . '/libs/cashaddr/Exception/InvalidChecksumException.php');

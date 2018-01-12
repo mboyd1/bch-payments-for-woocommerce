@@ -1,7 +1,7 @@
 <?php
 /*
 Bitcoin Cash Payments for WooCommerce
-https://github.com/mboyd1/bitcoin-cash-payments-for-woocommerce
+https://github.com/sanchaz/bitcoin-cash-payments-for-woocommerce
 */
 
 
@@ -58,7 +58,7 @@ function BWWC__plugins_loaded__load_bitcoin_gateway()
             // Define user set variables
             $this->title 		= $this->settings['title'];	// The title which the user is shown on the checkout – retrieved from the settings which init_settings loads.
             $this->bitcoin_addr_merchant = $this->settings['bitcoin_addr_merchant'];	// Forwarding address where all product payments will aggregate.
-            
+
             $this->confs_num = $bwwc_settings['confs_num'];  //$this->settings['confirmations'];
             $this->description 	= $this->settings['description'];	// Short description about the gateway which is shown on checkout.
             $this->instructions = $this->settings['instructions'];	// Detailed payment instructions for the buyer.
@@ -76,7 +76,7 @@ function BWWC__plugins_loaded__load_bitcoin_gateway()
             add_action('woocommerce_thankyou_' . $this->id, array($this, 'BWWC__thankyou_page')); // hooks into the thank you page after payment
 
             // Customer Emails
-        add_action('woocommerce_email_before_order_table', array($this, 'BWWC__email_instructions'), 10, 2); // hooks into the email template to show additional details
+            add_action('woocommerce_email_before_order_table', array($this, 'BWWC__email_instructions'), 10, 2); // hooks into the email template to show additional details
 
             // Hook IPN callback logic
             if (version_compare(WOOCOMMERCE_VERSION, '2.0', '<')) {
@@ -243,6 +243,16 @@ function BWWC__plugins_loaded__load_bitcoin_gateway()
     </td>
   </tr>
   <tr class="bpit-table-row">
+    <td style="vertical-align:middle;" class="bpit-td-name bpit-td-name-btcaddr">
+      Cash Addr:
+    </td>
+    <td class="bpit-td-value bpit-td-value-btcaddr">
+      <div style="border:1px solid #FCCA09;padding:2px 6px;margin:2px;background-color:#FCF8E3;border-radius:4px;color:#555;font-weight: bold;font-size: 120%;">
+        {{{BCH_CASHADDR}}}
+      </div>
+    </td>
+  </tr>
+  <tr class="bpit-table-row">
     <td style="vertical-align:middle;" class="bpit-td-name bpit-td-name-qr">
 	    QR Code:
     </td>
@@ -267,7 +277,7 @@ function BWWC__plugins_loaded__load_bitcoin_gateway()
 
             $payment_instructions_description = '
 						  <p class="description" style="width:50%;float:left;width:49%;">
-					    	' . __('Specific instructions given to the customer to complete Bitcoins payment.<br />You may change it, but make sure these tags will be present: <b>{{{BITCOINS_AMOUNT}}}</b>, <b>{{{BITCOINS_ADDRESS}}}</b> and <b>{{{EXTRA_INSTRUCTIONS}}}</b> as these tags will be replaced with customer - specific payment details.', 'woocommerce') . '
+					    	' . __('Specific instructions given to the customer to complete Bitcoins payment.<br />You may change it, but make sure these tags will be present: <b>{{{BITCOINS_AMOUNT}}}</b>, <b>{{{BITCOINS_ADDRESS}}}</b>, <b>{{{BCH_CASHADDR}}}</b> and <b>{{{EXTRA_INSTRUCTIONS}}}</b> as these tags will be replaced with customer - specific payment details.', 'woocommerce') . '
 						  </p>
 						  <p class="description" style="width:50%;float:left;width:49%;">
 					    	Payment Instructions, original template (for reference):<br />
@@ -329,7 +339,7 @@ function BWWC__plugins_loaded__load_bitcoin_gateway()
                                             '   <li>' . __('As soon as your payment is received in full you will receive email confirmation with order delivery details.', 'woocommerce' ) . '</li>' .
                                             '   <li>{{{EXTRA_INSTRUCTIONS}}}</li>' .
                                             '</ol>'
-        
+
         */
 
         //-------------------------------------------------------------------
@@ -345,12 +355,11 @@ function BWWC__plugins_loaded__load_bitcoin_gateway()
             $validation_msg = "";
             $store_valid    = BWWC__is_gateway_valid_for_use($validation_msg);
 
-            // After defining the options, we need to display them too; thats where this next function comes into play: ?>
+            // After defining the options, we need to display them too; thats where this next function comes into play:?>
 	    	<h3><?php _e('Bitcoin Cash Payment', 'woocommerce'); ?></h3>
 	    	<p>
 	    		<?php _e(
-                'Allows to accept payments in bitcoin cash. <a href="https://bitcoincash.org" target="_blank">Bitcoin Cash</a> is peer-to-peer, decentralized digital currency that enables instant payments from anyone to anyone, anywhere in the world
-<p style="border:1px solid #890e4e;padding:5px 10px;color:#004400;background-color:#FFF;"><u>Please donate Bitcoin Cash to</u>:&nbsp;&nbsp;<span style="color:#d21577;font-size:110%;font-weight:bold;">18vzABPyVbbia8TDCKDtXJYXcoAFAPk2cj</span></p>
+                'Allows to accept payments in bitcoin cash. <a href="https://bitcoincash.org" target="_blank">Bitcoin Cash</a> is peer-to-peer, decentralized digital currency that enables instant payments from anyone to anyone, anywhere in the world.
 	    			',
                         'woocommerce'
             ); ?>
@@ -455,6 +464,7 @@ function BWWC__plugins_loaded__load_bitcoin_gateway()
             $order_total_in_btc   = sprintf("%.8f", $order_total_in_btc);
 
             $bitcoins_address = false;
+            $bch_cashaddr = false;
 
             $order_info =
             array(
@@ -477,7 +487,7 @@ function BWWC__plugins_loaded__load_bitcoin_gateway()
 
                 // This function generates temporary bitcoin address and schedules IPN callback at the same
                 $ret_info_array = BWWC__generate_temporary_bitcoin_address__blockchain_info($bitcoin_addr_merchant, $callback_url);
-    
+
                 /*
             $ret_info_array = array (
                'result'                      => 'success', // OR 'error'
@@ -499,6 +509,8 @@ function BWWC__plugins_loaded__load_bitcoin_gateway()
                 */
                 $ret_info_array = BWWC__get_bitcoin_address_for_payment__electrum(BWWC__get_next_available_mpk(), $order_info);
                 $bitcoins_address = @$ret_info_array['generated_bitcoin_address'];
+                $bch_cashaddr = @$ret_info_array['generated_bch_cashaddr'];
+                print "$bch_cashaddr";
             }
 
             if (!$bitcoins_address) {
@@ -526,6 +538,11 @@ function BWWC__plugins_loaded__load_bitcoin_gateway()
              $order_id, 			// post id ($order_id)
              'bitcoins_address',	// meta key
              $bitcoins_address 	// meta value. If array - will be auto-serialized
+             );
+            update_post_meta(
+             $order_id, 			// post id ($order_id)
+             'bch_cashaddr',	// meta key
+             $bch_cashaddr 	// meta value. If array - will be auto-serialized
              );
             update_post_meta(
              $order_id, 			// post id ($order_id)
@@ -570,7 +587,7 @@ function BWWC__plugins_loaded__load_bitcoin_gateway()
                   // woocommerce does not automatically cancel expired on-hold orders. Woocommerce handles holding the stock
                   // for pending orders until order payment is complete.
                         $order->update_status('pending', __('Awaiting bitcoin payment to arrive', 'woocommerce'));
-            
+
                         // Me: 'pending' does not trigger "Thank you" page and neither email sending. Not sure why.
                         //			Also - I think cancellation of unpaid orders needs to be initiated from cron job, as only we know when order needs to be cancelled,
                         //			by scanning "on-hold" orders through 'assigned_address_expires_in_mins' timeout check.
@@ -615,11 +632,13 @@ function BWWC__plugins_loaded__load_bitcoin_gateway()
             // Assemble detailed instructions.
             $order_total_in_btc   = get_post_meta($order->id, 'order_total_in_btc', true); // set single to true to receive properly unserialized array
             $bitcoins_address = get_post_meta($order->id, 'bitcoins_address', true); // set single to true to receive properly unserialized array
+            $bch_cashaddr = get_post_meta($order->id, 'bch_cashaddr', true); // set single to true to receive properly unserialized array
 
 
             $instructions = $this->instructions;
             $instructions = str_replace('{{{BITCOINS_AMOUNT}}}', $order_total_in_btc, $instructions);
             $instructions = str_replace('{{{BITCOINS_ADDRESS}}}', $bitcoins_address, $instructions);
+            $instructions = str_replace('{{{BCH_CASHADDR}}}', $bch_cashaddr, $instructions);
             $instructions =
                 str_replace(
                     '{{{EXTRA_INSTRUCTIONS}}}',
@@ -627,7 +646,7 @@ function BWWC__plugins_loaded__load_bitcoin_gateway()
                     $this->instructions_multi_payment_str,
                     $instructions
                     );
-            $order->add_order_note(__("Order instructions: price=&#3647;{$order_total_in_btc}, incoming account:{$bitcoins_address}", 'woocommerce'));
+            $order->add_order_note(__("Order instructions: price=&#3647;{$order_total_in_btc}, incoming account:{$bitcoins_address}, (cashddr: {$bch_cashaddr}", 'woocommerce'));
 
             echo wpautop(wptexturize($instructions));
         }
@@ -657,11 +676,13 @@ function BWWC__plugins_loaded__load_bitcoin_gateway()
             // Assemble payment instructions for email
             $order_total_in_btc   = get_post_meta($order->id, 'order_total_in_btc', true); // set single to true to receive properly unserialized array
             $bitcoins_address = get_post_meta($order->id, 'bitcoins_address', true); // set single to true to receive properly unserialized array
+            $bch_cashaddr = get_post_meta($order->id, 'bch_cashaddr', true); // set single to true to receive properly unserialized array
 
 
             $instructions = $this->instructions;
             $instructions = str_replace('{{{BITCOINS_AMOUNT}}}', $order_total_in_btc, $instructions);
             $instructions = str_replace('{{{BITCOINS_ADDRESS}}}', $bitcoins_address, $instructions);
+            $instructions = str_replace('{{{BCH_CASHADDR}}}', $bch_cashaddr, $instructions);
             $instructions =
                 str_replace(
                     '{{{EXTRA_INSTRUCTIONS}}}',
